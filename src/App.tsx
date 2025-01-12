@@ -37,18 +37,25 @@ function App() {
     resolver: yupResolver(schema),
     defaultValues: initialValues,
   });
+
   const { getValues, control, setValue, reset, handleSubmit } = form;
+
   const formValues = getValues();
+  const conversionUnitsLength = formValues.conversionUnits.length;
 
   const onSubmit: SubmitHandler<FormType> = () => {
-    if (formValues.conversionUnits.length > 0) {
+    if (conversionUnitsLength > 0) {
       setOpen(true);
     }
     getFormattedValues(formValues);
     setTimeout(() => {
-      reset(initialValues);
+      handleReset();
       setOpen(false);
     }, 4000);
+  };
+
+  const handleReset = () => {
+    reset(initialValues);
   };
 
   const { fields, append, remove } = useFieldArray({
@@ -100,10 +107,11 @@ function App() {
                   <FormLabel>Select Unit</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={(value) =>
-                        field.onChange(handleUnitChange(value))
-                      }
-                      defaultValue={field.value}
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        handleUnitChange(value);
+                      }}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Unit" />
@@ -171,7 +179,9 @@ function App() {
                       variant="destructive"
                       onClick={() => {
                         remove(index);
-                        reset(initialValues);
+                        if (conversionUnitsLength === 1) {
+                          handleReset();
+                        }
                       }}
                     >
                       <Trash2Icon />
